@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>注册</title>
+		<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+		<script src="js/data.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<style type="text/css">
+			body, html {
+				background: #DDDDDD;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container">
+			<div class="row" style="margin-top: 150px;">
+				<div class="col-xs-4 col-xs-offset-4">
+					<div class="col-xs-10 col-xs-offset-1" style="padding: 50px; background: white;">
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">U</span>
+								<input type="text" name="username" id="username" class="form-control" placeholder="请输入用户名" />
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">P</span>
+								<input type="password" name="password" id="password" class="form-control" placeholder="请输入密码" />
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="input-group">
+								<span class="input-group-addon">N</span>
+								<input type="text" name="name" id="name" class="form-control" placeholder="请输入姓名" />
+							</div>
+						</div>
+						<div class="form-group">
+							<button class="btn btn-block btn-default" id="regist">注册</button>
+						</div>
+						<div class="form-group">
+								<a href="login.html">又想起来了</a>
+							</div>
+						<div class="alert alert-danger" id="registNo" style="display: none;">
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		$("#username").focus(function() {
+			$("#registNo").hide();
+		})
+		$("#password").focus(function() {
+			$("#registNo").hide();
+		})
+		$("#name").focus(function() {
+			$("#registNo").hide();
+		})
+		$("#regist").click(function() {
+			if($.trim($('#username').val())=="" || $.trim($('#password').val())=="" || $.trim($("#name").val())=="") {
+				$("#registNo").show();
+				$("#registNo").text("注册信息不能为空");
+			} else {
+				$.ajax({
+					type: 'post',
+					url: site + 'regist',
+					dataType: 'json',
+					data: {
+						'username': $('#username').val(),
+						'password': $('#password').val(),
+						'name': $('#name').val()
+					},
+					success: function(resultJava) {
+						var result = resultJava;
+						if(result.isSuccess == "true") {
+							sessionStorage.setItem("username", $("#username").val());
+							window.location.href = "index.html";
+						} else {
+							$("#registNo").show();
+							if (result.msg == null) {
+								$("#registNo").text("未知错误");
+							} else {
+								$("#registNo").text(result.msg);
+							}
+							
+						}
+					}
+				});
+			}
+		})
+	</script>
+
+</html>

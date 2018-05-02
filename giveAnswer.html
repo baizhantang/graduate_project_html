@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>提交任务</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/bootstrap-datetimepicker.min.css"/>
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="js/data.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-datetimepicker.js"></script>
+    <script src="js/bootstrap-datetimepicker.fr.js"></script>
+    <script type="text/javascript">
+        if (sessionStorage.getItem("studentNumber") == null) {
+            alert("身份信息无效");
+            window.location.href = "studentLogin.html";
+        }
+    </script>
+    <style type="text/css">
+        body,
+        html {
+            background: #DDDDDD;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <div class="row" style="margin-top: 100px;">
+        <div class="col-md-6 col-md-offset-3 col-xs-10 col-xs-offset-1">
+            <div class="col-md-10 col-md-offset-1" style="padding: 25px 50px 50px 50px; background: white;">
+                <h3 style="margin-bottom: 20px;">
+                    完成任务
+                    <button class="btn btn-link" id="back" style="float: right;">返回</button>
+                </h3>
+                <div class="alert alert-info alert-dismissable" id="describeTip">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">
+                        &times;
+                    </button>
+                </div>
+                <div id="questionBox" class="form-group">
+
+                </div>
+                <div>
+                    <div class="form-group">
+                        <label for="describe" style='font-size: 15px;'>备注</label>
+                        <textarea name="describe" id="describe" rows="" cols="" class="form-control"
+                                  placeholder="有什么想说的... 当然，也可以不说"></textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-block btn-default" id="createTask">提交</button>
+                </div>
+                <div class="alert alert-danger" id="createNo" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script type="text/javascript">
+    var count = 0;
+    if (sessionStorage.getItem("studentNumber") == null) {
+        alert("身份信息无效");
+        window.location.href = "studentLogin.html";
+    }
+
+    function GetQueryString(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    }
+
+    $.ajax({
+        type: "post",
+        url: site + "getQuestion",
+        dataType: "json",
+        data: {
+            'taskNumber': GetQueryString("taskNumber"),
+            'studentNumber': sessionStorage.getItem("studentNumber")
+        },
+        success: function (returnValue) {
+            var returnData = returnValue.question;
+            console.info(returnData);
+            if (returnData != null) {
+                var appendStr = "";
+                for (var i = 0; i < returnData.length; i++) {
+                    if (returnData[i].describe != "") {
+                        appendStr += "<div class='form-group'><label for='q" + i + "' style='font-size: 15px;'>" + returnData[i].title + "</label><small style='color: red;'>(" + returnData[i].describe + ")</small><input type='text' class='form-control' id='q" + i + "'></div>";
+                    } else {
+                        appendStr += "<div class='form-group'><label for='q" + i + "' style='font-size: 15px;'>" + returnData[i].title + "</label><input type='text' class='form-control' id='q" + i + "'></div>";
+                    }
+
+                }
+                count = returnData.length;
+                $("#describeTip").append(returnValue.taskDescribe);
+                $("#questionBox").append(appendStr);
+            }
+        }
+    });
+    $("#questionBox").on("click", function () {
+        $("#createNo").hide();
+    });
+    $("#describe").click(function () {
+        $("#createNo").hide();
+    });
+    $("#back").click(function () {
+        window.location.href = "studentIndex.html";
+    });
+    $("#createTask").click(function () {
+        var flag = true;
+
+        for (var i = 0; i < count; i++) {
+            if ($.trim($("#q" + i + "").val()) == "") {
+                $("#createNo").text("信息不全");
+                $("#createNo").show();
+                flag = false;
+                break;
+            }
+        }
+
+        if (flag == true) {
+            var answer = "[";
+            for (var i = 0; i < count; i++) {
+                answer += "{'answer':'" + $("#q" + i + "").val() + "'}";
+                if (i != count) {
+                    answer += ",";
+                }
+            }
+            answer += "]";
+            $.ajax({
+                type: "post",
+                url: site + "giveAnswer",
+                dataType: "json",
+                data: {
+                    'taskNumber': GetQueryString("taskNumber"),
+                    'studentNumber': sessionStorage.getItem("studentNumber"),
+                    'describe': $("#describe").val(),
+                    'answer': answer
+                },
+                success: function (returnValue) {
+                    var returnData = returnValue;
+                    if (returnData.isSuccess == "true") {
+                        window.location.href = "studentIndex.html";
+                    } else {
+                        alert(returnData.msg);
+                    }
+                }
+            });
+        }
+    });
+</script>
+
+</html>

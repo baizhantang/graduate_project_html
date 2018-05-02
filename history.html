@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>历史任务</title>
+		<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" href="css/myCss.css" />
+		<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+		<script src="js/data.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script type="text/javascript">
+			if(sessionStorage.getItem("username") == null) {
+				alert("身份信息无效");
+				window.location.href = "login.html";
+			}
+		</script>
+		<style type="text/css">
+			a:link {
+				text-decoration: none;
+			}
+			
+			a:active {
+				text-decoration: none;
+				color: black;
+			}
+			
+			a:hover {
+				text-decoration: none;
+				color: black;
+			}
+			
+			a:visited {
+				text-decoration: none;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container" style="margin: 0 auto; width: 800px;">
+			<header class="gbtags-header">
+				<div class="page-header" style="height: 100px;">
+					<span style="font-size: 30px; font: '微软雅黑';">项目仓库</span>
+					<button class="btn btn-link"  style="margin-top: 15px;float: right;" id="back">返回</button>
+				</div>
+			</header>
+			<div class="row">
+				<ul style="margin: 0; padding: 0;" id="projectBox">
+					
+				</ul>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		if(sessionStorage.getItem("username") == null) {
+			alert("身份信息无效");
+			window.location.href = "login.html";
+		}
+		$("#back").click(function() {
+			window.location.href = "index.html";
+		});
+		$.ajax({
+			type: "post",
+			url: site + "getHistoryTask",
+			dataType: "json",
+			data: {
+				'teacherUserName': sessionStorage.getItem("username")
+			},
+			success: function(returnValue) {
+				var appendStr = "";
+				var returnData = returnValue;
+				var pa = returnData.past;
+				var inv = returnData.inValid;
+				for(var i = 0; i < pa.length; i++) {
+					appendStr += "<li class='myList panel panel-default'><a href='taskInfo.html?taskNumber=" + pa[i].taskNumber + "' class='listA'>" + pa[i].taskName + "(完成)</a></li>";
+				}
+				for(var i = 0; i < inv.length; i++) {
+					appendStr += "<li class='myList panel panel-default'><a href='taskInfo.html?taskNumber=" + inv[i].taskNumber + "' class='listA'>" + inv[i].taskName + "(关闭)</a></li>";
+				}
+				if (appendStr.length == 0) {
+					appendStr = "<li class='myList panel panel-default'><span></span>暂无数据</span></li>";
+				}
+				$("#projectBox").append(appendStr);
+			}
+		});
+	</script>
+
+</html>

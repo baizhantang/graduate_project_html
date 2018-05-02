@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>新建任务</title>
+		<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="css/bootstrap-datetimepicker.min.css" />
+		<script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+		<script src="js/data.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		<script src="js/bootstrap-datetimepicker.js"></script>
+		<script src="js/bootstrap-datetimepicker.fr.js"></script>
+		<script type="text/javascript">
+			if (sessionStorage.getItem("username") == null) {
+				alert("身份信息无效");
+				window.location.href = "login.html";
+			}
+		</script>
+		<style type="text/css">
+			body,
+			html {
+				background: #DDDDDD;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container">
+			<div class="row" style="margin-top: 100px;">
+				<div class="col-md-6 col-md-offset-3 col-xs-10 col-xs-offset-1">
+					<div class="col-md-10 col-md-offset-1" style="padding: 25px 50px 50px 50px; background: white;">
+						<h3 style="margin-bottom: 20px;">
+							新建任务
+							<button class="btn btn-link" id="back" style="float: right;">返回</button>
+							<button class="btn btn-link" id="group" style="float: right;">群组管理</button>
+						</h3>
+						<h4>任务信息</h4>
+						<div class="form-group">
+							<input type="text" name="teacherUserName" id="teacherUserName" style="display: none;" />
+						</div>
+						<div class="form-group">
+							<input type="text" class="form-control" title="任务名称" placeholder="任务名称" id="taskName" />
+						</div>
+						<div class="form-group">
+							<input type="text" class="form-control" title="任务描述" placeholder="任务描述" id="taskDescribe" />
+						</div>
+						<div class="form-group">
+							<input class="form-control" type="text" title="截止日期" placeholder="截止日期" id="datetimepicker" data-date-format="yyyy-mm-dd hh:ii:ss" />
+						</div>
+						<div class="form-group">
+							<select class="form-control" id="groupBox" name="students" data-toggle="tooltip" data-placement="top" title="如果没有群组可到 ‘群组管理’ 中新建">
+								<option value="null">请选择群组</option>
+							</select>
+						</div>
+
+						<h4 style="margin-top: 50px;">
+							任务项目
+						</h4>
+						<button class="btn btn-link" id="plus" style="margin-bottom: 10px;color: gray;"><span class="glyphicon glyphicon-plus"></span></button>
+						<button class="btn btn-link" id="minus" style="margin-bottom: 10px;color: gray;"><span class="glyphicon glyphicon-minus"></span></button>
+						<div id="questionBox">
+							<div class="form-group">
+								<div class="input-group">
+									<input type="text" class="form-control" name="1a" id="1a" placeholder="标题" />
+									<input type="text" class="form-control" name="1b" id="1b" placeholder="描述（可选）" />
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<button class="btn btn-block btn-default" id="createTask">发布</button>
+						</div>
+						<div class="alert alert-danger" id="createNo" style="display: none;">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		if (sessionStorage.getItem("username") == null) {
+				alert("身份信息无效");
+				window.location.href = "login.html";
+			}
+		var count = 0;
+		$.ajax({
+			type:"post",
+			url:site + "findAllGroup",
+			dataType: "json",
+			data: {
+				'teacherUserName':sessionStorage.getItem("username")
+			},
+			success: function(returnValue) {
+				var returnData = returnValue;
+				var appendStr = "";
+				if (returnData.isSuccess == "true") {
+					var returnGroups = returnData.groups;
+					console.info(returnGroups);
+					for (var i = 0; i < returnGroups.length; i++) {
+						appendStr += "<option value='" + returnGroups[i].id + "'>" + returnGroups[i].groupName + "</option>"
+					}
+					$("#groupBox").append(appendStr);
+				}
+				$("#teacherUserName").val(sessionStorage.getItem("username"));
+			}
+		});
+		$(function() {
+			$("[data-toggle='tooltip']").tooltip();
+		});
+		$("#taskName").click(function() {
+			$("#createNo").hide();
+		});
+		$("#taskDescribe").click(function() {
+			$("#createNo").hide();
+		});
+		$("#datetimepicker").click(function() {
+			$("#createNo").hide();
+		});
+		$("#groupBox").click(function() {
+			$("#createNo").hide();
+		});
+		$("#questionBox").on("click", function() {
+			$("#createNo").hide();
+		});
+		$('#datetimepicker').datetimepicker({
+			format: 'yyyy-mm-dd hh:ii:ss',
+			/*此属性是显示顺序，还有显示顺序是mm-dd-yyyy*/
+			autoclose: 'true',
+			setStartDate: '2018-1-1'
+		});
+		$("#plus").click(function() {
+			var str = "<div class='form-group'><div class='input-group'><input type='text' class='form-control' name='" + (count + 2) + "a' id='" + (count + 2) + "a' placeholder='标题' /><input type='text' class='form-control' name='" + (count + 2) + "b' id='" + (count + 2) + "b' placeholder='描述（可选）' /></div></div>";
+			count++;
+			$("#questionBox").append(str);
+		});
+		$("#minus").click(function() {
+			if(count > 0) {
+				$("#" + (count + 1) + "a").parent().remove();
+				count--;
+			}
+		});
+		$("#group").click(function() {
+			window.location.href = "groupManager.html";
+		});
+		$("#back").click(function() {
+			window.location.href = "index.html";
+		});
+		$("#createTask").click(function() {
+			var flag = true;
+			if($.trim($("#taskName").val()) == "" || $.trim($("#taskDescribe").val()) == "" || $.trim($("#datetimepicker").val()) == "" || $.trim($("#groupBox").val()) == "null") {
+				$("#createNo").text("任务信息不全");
+				$("#createNo").show();
+				flag = false;
+			} else {
+				for(var i = 0; i < count + 1; i++) {
+					if ($.trim($("#" + (i + 1) + "a").val()) == "") {
+						$("#createNo").text("项目信息不全");
+						$("#createNo").show();
+						flag = false;
+						break;
+					}
+				}
+			}
+			if (flag == true) {
+				var question = "[";
+				for(var i = 0; i < count + 1; i++) {
+					question += "{'title':'" + $("#" + (i+1) + "a").val() + "','describe':'" + $("#" + (i+1) + "b").val() + "'}";
+					if (i != count) {
+						question += ",";
+					}
+				}
+				question += "]";
+				var taskInfo = {
+                    'name': $("#taskName").val(),
+                    'describe': $("#taskDescribe").val(),
+                    'deadline': $("#datetimepicker").val(),
+                    'teacherUserName': $("#teacherUserName").val(),
+                    'question': question,
+                    'students': $("#groupBox").val()
+				};
+                console.info(JSON.stringify(taskInfo));
+				$.ajax({
+					type: "post",
+					url: site + "addTask",
+					dataType: "json",
+					data: {
+						'taskInfo': JSON.stringify(taskInfo)
+					},
+					success: function(returnValue) {
+						var returnData = returnValue;
+						if (returnData.isSuccess == "true") {
+							window.location.href = "index.html";
+						} else {
+							alert(returnData.msg);
+						}
+					}
+				});
+			}
+		});
+	</script>
+
+</html>
